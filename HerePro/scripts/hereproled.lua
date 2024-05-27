@@ -50,6 +50,19 @@ local rainbow = {
 }
 -- 0-49
 local led_map = {
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
   0,
   1,
   2,
@@ -87,20 +100,7 @@ local led_map = {
   34,
   35,
   36,
-  37,
-  38,
-  39,
-  40,
-  41,
-  42,
-  43,
-  44,
-  45,
-  46,
-  47,
-  48,
-  49
-}
+  }
 
 local led_len = 50
 
@@ -188,6 +188,7 @@ end
 
 function do_point_north(r, g, b, led_trail_length, softness)
   local yaw = (led_len * periph:get_yaw_earth()/(2*math.pi))
+  yaw = yaw - (led_trail_length/2)
   local ofs = yaw - math.floor(yaw+0.5)
   yaw = math.floor(yaw+0.5) % led_len
   local updated_leds = {}
