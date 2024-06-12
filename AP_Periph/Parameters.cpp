@@ -218,6 +218,10 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
     GOBJECT(gps_rover, "ROVER",  GPS_Rover),
 #endif
 
+    // @Group: Bcast RID
+    // @Path: AP_Periph/bcast_remoteid.cpp
+    GOBJECT(bcast_remoteid, "BRID", Bcast_RemoteID),
+
     AP_VAREND
 };
 

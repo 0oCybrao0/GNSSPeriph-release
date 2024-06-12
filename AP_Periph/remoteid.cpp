@@ -4,10 +4,8 @@
 #define ODID_COPY(name) pkt.name = msg.name
 #define ODID_COPY_STR(name) do { strncpy_noterm((char*)pkt.name, (const char*)msg.name.data, sizeof(pkt.name)); } while(0)
 
-#ifndef DRONEID_MODULE_CHAN
-#define DRONEID_MODULE_CHAN MAVLINK_COMM_0
-#endif
 
+// handle message recieved from the CAN bus sent by Flight Controller
 void AP_Periph_DroneCAN::handle_remoteid_location(const CanardRxTransfer& transfer, const dronecan_remoteid_Location &msg)
 {
     mavlink_open_drone_id_location_t pkt {};
@@ -28,7 +26,7 @@ void AP_Periph_DroneCAN::handle_remoteid_location(const CanardRxTransfer& transf
     ODID_COPY(speed_accuracy);
     ODID_COPY(timestamp);
     ODID_COPY(timestamp_accuracy);
-    mavlink_msg_open_drone_id_location_send_struct(DRONEID_MODULE_CHAN, &pkt);
+    mavlink_msg_open_drone_id_location_send_struct(DRONEID_MODULE_CHAN, &pkt); // this goes to the CubeID module
 }
 
 void AP_Periph_DroneCAN::handle_remoteid_basicid(const CanardRxTransfer& transfer, const dronecan_remoteid_BasicID &msg)

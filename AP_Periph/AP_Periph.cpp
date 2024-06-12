@@ -215,6 +215,9 @@ void AP_Periph_FW::init()
 #if AP_SCRIPTING_ENABLED
     scripting.init();
 #endif
+
+    bcast_remoteid.init();
+
     start_ms = AP_HAL::millis();
 }
 
@@ -311,6 +314,7 @@ void AP_Periph_FW::update()
         fiftyhz_last_update_ms = now;
         notify.update();
         mavlink.update();
+        bcast_remoteid.update();
     }
 
     rcout_update();

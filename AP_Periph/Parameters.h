@@ -59,7 +59,8 @@ public:
         k_param_imu,
         k_param_gps_safeboot,
         k_param_gps_rover,
-        k_param_gps_type
+        k_param_gps_type,
+        k_param_bcast_remoteid,
     };
 
     AP_Int16 format_version;

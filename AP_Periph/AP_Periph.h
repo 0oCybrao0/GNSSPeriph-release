@@ -35,7 +35,7 @@
 #include "GPS_Base.h"
 #include "GPS_Rover.h"
 #include <AP_Common/ExpandingString.h>
-
+#include "bcast_remoteid.h"
 
 #include "Parameters.h"
 
@@ -51,6 +51,10 @@ void stm32_watchdog_pat();
 extern const app_descriptor_t app_descriptor;
 
 class AP_Periph_DroneCAN;
+
+#ifndef DRONEID_MODULE_CHAN
+#define DRONEID_MODULE_CHAN MAVLINK_COMM_0
+#endif
 
 extern "C" {
     void can_vprintf(uint8_t severity, const char *fmt, va_list arg);
@@ -246,6 +250,8 @@ public:
     ObjectBuffer<uavcan_protocol_debug_LogMessage> log_buffer{20};
 
     ExpandingString uart_info;
+
+    Bcast_RemoteID bcast_remoteid;
 };
 
 
