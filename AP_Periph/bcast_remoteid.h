@@ -72,7 +72,7 @@ public:
     void handle_msg(mavlink_channel_t chan, const mavlink_message_t &msg);
 
     bool enabled(void) const {
-        return _enable != 0;
+        return _enabled != 0;
     }
 
     void set_arm_status(mavlink_open_drone_id_arm_status_t &status);
@@ -86,7 +86,7 @@ public:
 private:
     bool _initialised;
     // parameters
-    AP_Int8  _enable;
+    AP_Int8  _enabled;
 
     char ua_type[3];
     char id_type[3];

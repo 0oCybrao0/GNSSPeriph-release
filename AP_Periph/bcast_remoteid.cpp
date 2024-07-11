@@ -26,6 +26,7 @@
 #include <AP_GPS/AP_GPS.h>
 #include <AP_Baro/AP_Baro.h>
 #include <AP_Parachute/AP_Parachute.h>
+#include <AP_Param/AP_Param.h>
 #include <AP_Vehicle/AP_Vehicle.h>
 #include <AP_DroneCAN/AP_DroneCAN.h>
 #include <stdio.h>
@@ -37,9 +38,9 @@ const AP_Param::GroupInfo Bcast_RemoteID::var_info[] = {
 
     // @Param: ENABLE
     // @DisplayName: Enable Bcast ODID subsystem
-    // @Description: Enable ODID subsystem
+    // @Description: Enable Bcast ODID subsystem
     // @Values: 0:Disabled,1:Enabled
-    AP_GROUPINFO_FLAGS("ENABLE", 1, Bcast_RemoteID, _enable, 0, AP_PARAM_FLAG_ENABLE),
+    AP_GROUPINFO_FLAGS("_ENABLE", 1, Bcast_RemoteID, _enabled, 0, AP_PARAM_FLAG_ENABLE),
 
     AP_GROUPEND
 };
@@ -64,8 +65,13 @@ Bcast_RemoteID::Bcast_RemoteID()
 
 void Bcast_RemoteID::init()
 {
-    if (_enable == 0) {
+    if (!_enabled) {
         return;
+    }
+    float value;
+    AP_Param::get("GPS_RAW_DATA", value);
+    if (value != 0.0 && value != 1.0) {
+        AP_Param::set_and_save_by_name("GPS_RAW_DATA", 1);
     }
 
     load_UAS_ID_from_persistent_memory();
@@ -121,6 +127,7 @@ void Bcast_RemoteID::get_persistent_params(ExpandingString &str) const
     //     str.printf("DID_UAS_ID=%s\nDID_UAS_ID_TYPE=%u\nDID_UA_TYPE=%u\n", pkt_basic_id.uas_id, pkt_basic_id.id_type, pkt_basic_id.ua_type);
     // }
     // TODO: implement this
+
 }
 
 // Perform the pre-arm checks and prevent arming if they are not satisifed
@@ -142,10 +149,10 @@ bool Bcast_RemoteID::pre_arm_check(char* failmsg, uint8_t failmsg_len)
     const uint32_t max_age_ms = 3000;
     const uint32_t now_ms = AP_HAL::millis();
 
-    if (last_arm_status_ms == 0 || now_ms - last_arm_status_ms > max_age_ms) {
-        strncpy(failmsg, "ARM_STATUS not available", failmsg_len);
-        return false;
-    }
+    // if (last_arm_status_ms == 0 || now_ms - last_arm_status_ms > max_age_ms) {
+    //     strncpy(failmsg, "ARM_STATUS not available", failmsg_len);
+    //     return false;
+    // }
 
     if (last_system_ms == 0 ||
         (now_ms - last_system_ms > max_age_ms &&
@@ -164,7 +171,7 @@ bool Bcast_RemoteID::pre_arm_check(char* failmsg, uint8_t failmsg_len)
 
 void Bcast_RemoteID::update()
 {
-    if (_enable == 0) {
+    if (_enabled == 0) {
         return;
     }
 
@@ -338,8 +345,6 @@ void Bcast_RemoteID::send_location_message()
     // accuracy, as we use system timer to propogate time
     timestamp_accuracy_mav =  create_enum_timestamp_accuracy(1.0);
 
-
-
     // Timestamp here is the number of seconds after into the current hour referenced to UTC time (up to one hour)
 
     // FIX we need to only set this if w have a GPS lock is 2D good enough for that?
@@ -355,25 +360,25 @@ void Bcast_RemoteID::send_location_message()
         WITH_SEMAPHORE(_sem);
         // take semaphore so CAN gets a consistent packet
         pkt_location = mavlink_open_drone_id_location_t{
-        latitude : latitude,
-        longitude : longitude,
-        altitude_barometric : ODID_INV_ALT,
-        altitude_geodetic : altitude_geodetic,
-        height : 0,
-        timestamp : timestamp,
-        direction : uint16_t(direction * 100.0), // Heading (centi-degrees)
-        speed_horizontal : uint16_t(speed_horizontal * 100.0), // Ground speed (cm/s)
-        speed_vertical : int16_t(climb_rate * 100.0), // Climb rate (cm/s)
-        target_system : 0,
-        target_component : 0,
+        latitude : latitude, // Required
+        longitude : longitude, // Required
+        altitude_barometric : ODID_INV_ALT, // Optional (not supported)
+        altitude_geodetic : altitude_geodetic, // Required
+        height : 0, // Optional 
+        timestamp : timestamp, // Required
+        direction : uint16_t(direction * 100.0), // Required, Heading (centi-degrees)
+        speed_horizontal : uint16_t(speed_horizontal * 100.0), // Required, Ground speed (cm/s)
+        speed_vertical : int16_t(climb_rate * 100.0), // Required, Climb rate (cm/s)
+        target_system : 0, // Not used
+        target_component : 0, // Not used
         id_or_mac : {},
-        status : uint8_t(uav_status),
-        height_reference : MAV_ODID_HEIGHT_REF_OVER_TAKEOFF,           // height reference enum: Above takeoff location or above ground
-        horizontal_accuracy : uint8_t(horizontal_accuracy_mav),
-        vertical_accuracy : uint8_t(vertical_accuracy_mav),
-        barometer_accuracy : MAV_ODID_VER_ACC_UNKNOWN,
-        speed_accuracy : uint8_t(speed_accuracy_mav),
-        timestamp_accuracy : uint8_t(timestamp_accuracy_mav)
+        status : uint8_t(uav_status), // Optional, 0 for not declared, 4 for emergency
+        height_reference : MAV_ODID_HEIGHT_REF_OVER_TAKEOFF, // Optional, height reference enum: Above takeoff location or above ground
+        horizontal_accuracy : uint8_t(horizontal_accuracy_mav), // Required
+        vertical_accuracy : uint8_t(vertical_accuracy_mav), // Required
+        barometer_accuracy : MAV_ODID_VER_ACC_UNKNOWN, // Optional (not supported)
+        speed_accuracy : uint8_t(speed_accuracy_mav), // Required
+        timestamp_accuracy : uint8_t(timestamp_accuracy_mav) // Required
         };
     }
 
