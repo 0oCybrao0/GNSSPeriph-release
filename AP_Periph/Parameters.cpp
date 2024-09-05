@@ -47,6 +47,13 @@ const AP_Param::Info AP_Periph_FW::var_info[] = {
     // @User: Advanced
     GSCALAR(format_version,         "FORMAT_VERSION", 0),
 
+    // @PARAM: BCAST_REMOTEID
+    // @DisplayName: Broadcast RemoteID
+    // @Description: Broadcast RemoteID
+    // @Range: 0 1
+    // @User: Advanced
+    GSCALAR(bcast_remoteid, "BCAST_REMOTEID", 0),
+
     // @Param: CAN_NODE
     // @DisplayName: UAVCAN node that is used for this network
     // @Description: UAVCAN node should be set implicitly or 0 for dynamic node allocation
